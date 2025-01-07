@@ -45,7 +45,7 @@ export default function Page() {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         body: formData,
-      });
+      }); 
 
       const data = await response.json();
 
