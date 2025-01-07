@@ -1,0 +1,29 @@
+[
+  {
+    "categories": [
+      {
+        "id": 0,
+        "name": "example",
+        "createdAt": "00/00/00",
+        "notes": [
+          {
+            "id": 0,
+            "title": "example title",
+            "description": "descripton adasodjod",
+            "createdAt": "00/00/00"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "notesWithoutCategories": [
+      {
+        "id": 0,
+        "title": "example title",
+        "description": "descripton adasodjod",
+        "createdAt": "00/00/00"
+      }
+    ]
+  }
+]
