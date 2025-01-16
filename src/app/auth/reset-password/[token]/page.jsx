@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   validatePassword,
-  measurePasswordComplexity,
 } from "../../utils/validatePassword";
 import PasswordMeasureProgress from "@/components/ui/auth/password-meassure-progress";
 import { useRouter, usePathname } from "next/navigation";
@@ -34,7 +33,7 @@ export default function Page() {
     } else {
       router.push("/auth/login?error=invalid-token");
     }
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     const validateToken = async () => {

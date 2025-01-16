@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-
+import { Suspense } from "react";
 import Logo from "@/components/ui/logo";
 
-export default function VerifyEmailPage() {
+function Verify() {
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
   const searchParams = useSearchParams();
@@ -76,5 +76,19 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        </div>
+      }
+    >
+      <Verify />
+    </Suspense>
   );
 }

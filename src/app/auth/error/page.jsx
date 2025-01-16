@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import LayoutErrorPage from "@/components/ui/error-layout";
 
-export default function AuthErrorPage({
+function ErrorPageContent({
   onRetry = () => window.location.reload(),
   onBackToHome = () => (window.location.href = "/auth/login"),
 }) {
@@ -23,5 +22,19 @@ export default function AuthErrorPage({
       onRetry={onRetry}
       onBackToHome={onBackToHome}
     />
+  );
+}
+
+export default function AuthErrorPage({ props }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        </div>
+      }
+    >
+      <ErrorPageContent {...props} />
+    </Suspense>
   );
 }

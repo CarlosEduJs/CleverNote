@@ -16,6 +16,8 @@ import validateEmail from "@/app/auth/utils/validateEmail";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import SubmitBtn from "./submit-btn";
+import FormField from "./form-field";
 
 export default function DialogRecoverPassword({ open, onOpenChange }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -91,17 +93,7 @@ export default function DialogRecoverPassword({ open, onOpenChange }) {
           onSubmit={handleSubmit}
           noValidate
         >
-          <div className="grid gap-1.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-bold" htmlFor="email">
-                Email
-              </Label>
-              {errors.email && (
-                <p className="text-red-500 text-sm font-semibold">
-                  {errors.email}
-                </p>
-              )}
-            </div>
+          <FormField label="Email" error={errors.email}>
             <Input
               type="email"
               id="email"
@@ -111,23 +103,13 @@ export default function DialogRecoverPassword({ open, onOpenChange }) {
               className="placeholder:text-sm text-sm"
               aria-required="true"
             />
-          </div>
+          </FormField>
           <DialogFooter>
-            <Button
-              className="w-full mt-6"
-              aria-label="Receive link"
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-3">
-                  <Loader2 className="animate-spin" />
-                  Sending the link, please wait...
-                </div>
-              ) : (
-                <>Receive link</>
-              )}
-            </Button>
+            <SubmitBtn
+              text="Receive link"
+              textLoading="Sending link"
+              loading={isLoading}
+            />
           </DialogFooter>
         </form>
       </DialogContent>
