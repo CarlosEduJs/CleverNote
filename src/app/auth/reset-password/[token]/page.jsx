@@ -2,24 +2,26 @@
 
 import * as React from "react";
 
-import Link from "next/link";
-import Logo from "@/components/logo";
 import { useState, useEffect } from "react";
-import { ArrowUpRight, ChevronRightIcon, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   validatePassword,
   measurePasswordComplexity,
 } from "../../utils/validatePassword";
-import PasswordMeasureProgress from "@/components/password measure progress";
+import PasswordMeasureProgress from "@/components/ui/auth/password-meassure-progress";
 import { useRouter, usePathname } from "next/navigation";
+import AuthHeader from "@/components/ui/auth/auth-header";
+import FooterBtn from "@/components/ui/auth/footer-btn";
+import SubmitBtn from "@/components/ui/auth/submit-btn";
+import FormField from "@/components/ui/auth/form-field";
+import { usePasswordStrength } from "@/hooks/auth/usePasswordStrength";
 
 export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [measurePassword, setIsMeasurePassword] = useState("Password Strength");
+  const { measurePassword, handleOnChangeMeasurePassword } =
+    usePasswordStrength();
   const [isValidatingToken, setIsValidatingToken] = useState(true);
   const router = useRouter();
   const [token, setToken] = useState(null);
@@ -41,7 +43,7 @@ export default function Page() {
       try {
         const response = await fetch(`/api/auth/reset-password/${token}`);
         if (!response.ok) {
-          router.push("/auth/login?error=invalid-token");
+          router.push("/auth/error?error=invalid-token");
         }
       } catch (error) {
         console.error("Error validating token", error);
@@ -53,11 +55,6 @@ export default function Page() {
 
     validateToken();
   }, [token, router]);
-
-  const handleOnChangeMeasurePassword = (value) => {
-    const complexity = measurePasswordComplexity(value);
-    setIsMeasurePassword(complexity);
-  };
 
   const handleValidateErrors = (e) => {
     e.preventDefault();
@@ -115,13 +112,7 @@ export default function Page() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-gray-100">
-      <header className="flex items-center justify-between w-full max-w-2xl p-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-extrabold">Reset password</h1>
-          <ChevronRightIcon aria-hidden="true" />
-        </div>
-        <Logo aria-label="CleverNote logo" />
-      </header>
+      <AuthHeader title="Reset password" />
       <p className="text-center text-gray-600 mb-8 max-w-md">
         Hello forgetful, now you can reset your password below. Remember, choose
         a strong password, but don't forget it, you don't want to go through
@@ -130,17 +121,7 @@ export default function Page() {
       <main className="w-full max-w-2xl">
         <form className="mt-6" onSubmit={handleSubmit} noValidate>
           <div className="grid gap-4">
-            <div className="grid gap-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-bold" htmlFor="password">
-                  Password
-                </Label>
-                {errors.password && (
-                  <p className="text-red-500 text-sm font-semibold">
-                    {errors.password}
-                  </p>
-                )}
-              </div>
+            <FormField label="New password" error={errors.password}>
               <Input
                 type="password"
                 id="password"
@@ -152,44 +133,18 @@ export default function Page() {
                 onChange={(e) => handleOnChangeMeasurePassword(e.target.value)}
               />
               <PasswordMeasureProgress passwordStrength={measurePassword} />
-            </div>
+            </FormField>
           </div>
-          <Button
-            className="w-full mt-6"
-            aria-label="Change password"
-            type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center gap-3">
-                <Loader2 className="animate-spin" />
-                Changing password, please wait...
-              </div>
-            ) : (
-              <>Change password</>
-            )}
-          </Button>
+          <SubmitBtn
+            loading={isLoading}
+            text="Change password"
+            textLoading={"Changing you password"}
+          />
         </form>
       </main>
       <footer className="mt-6 flex flex-col gap-2">
-        <Button variant="outline" className="w-full">
-          <Link
-            className="flex items-center gap-3"
-            href={"/auth/login"}
-            aria-label="Go to login page"
-          >
-            Already have an account? <ArrowUpRight aria-hidden="true" />
-          </Link>
-        </Button>
-        <Button variant="outline" className="w-full">
-          <Link
-            className="flex items-center gap-3"
-            href={"/auth/signup"}
-            aria-label="Go to signup page"
-          >
-            Create New Account <ArrowUpRight aria-hidden="true" />
-          </Link>
-        </Button>
+        <FooterBtn text="Already have an account" textLink="login" />
+        <FooterBtn text="Don't have an account" textLink="signup" />
       </footer>
     </div>
   );
