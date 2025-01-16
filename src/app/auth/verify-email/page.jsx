@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
-import Logo from "@/components/logo";
+import Logo from "@/components/ui/logo";
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState("loading");
