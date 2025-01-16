@@ -14,10 +14,10 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   useSidebar,
-} from "../ui/sidebar";
-import Logo from "../logo";
-import NavUser from "../ui/nav-user";
-import UserAvatar from "../ui/useravatar";
+} from "@/components/ui/sidebar";
+import Logo from "./logo/index";
+import NavUser from "./nav-user";
+import UserAvatar from "@/components/ui/useravatar";
 
 const items = [
   {
@@ -54,9 +54,6 @@ export default function AppSidebar() {
       collapsible="icon"
       className="border-none"
     >
-      <h2 id="sidebar-title" className="sr-only">
-        Main Navigation
-      </h2>
       <SidebarContent className="bg-background md:pt-14 sm:py-5 max-md:py-3 ">
         <SidebarGroup>
           <div className="block md:hidden px-2">

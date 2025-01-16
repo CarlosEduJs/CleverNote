@@ -1,6 +1,6 @@
 import Icon from "./icon";
 
-import { lexend } from "../fonts";
+import { lexend } from "@/components/fonts";
 
 export default function Logo({ isHeader }) {
   return (

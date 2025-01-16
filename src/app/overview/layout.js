@@ -1,8 +1,8 @@
 import Header from "@/components/ui/header";
-import AppSidebar from "@/components/sidebar";
+import AppSidebar from "@/components/ui/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import AppBreadcrumb from "@/components/breadcrumb";
+import AppBreadcrumb from "@/components/ui/breadcrumbApp";
 
 export default function Layout({ children }) {
   return (

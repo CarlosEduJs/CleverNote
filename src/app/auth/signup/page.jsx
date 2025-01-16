@@ -2,100 +2,101 @@
 
 import * as React from "react";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Logo from "@/components/logo";
-import { ArrowBigRight, ArrowUpRight, ChevronRightIcon } from "lucide-react";
-
-import { FaGoogle, FaGithub } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
+import { useState, useRef } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Toast } from "@/components/ui/toast";
-
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import PasswordMeasureProgress from "@/components/ui/auth/password-meassure-progress";
+import { useToast } from "@/hooks/use-toast";
+import DialogValidEmailForUser from "@/components/ui/auth/validEmail-forUser";
+import AuthHeader from "@/components/ui/auth/auth-header";
+import GoogleBtn from "@/components/ui/auth/google-btn";
+import FormField from "@/components/ui/auth/form-field";
+import SubmitBtn from "@/components/ui/auth/submit-btn";
+import { usePasswordStrength } from "@/hooks/auth/usePasswordStrength";
+import useAvatarUpload from "@/hooks/auth/useAvatarUpload";
+import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import FooterBtn from "@/components/ui/auth/footer-btn";
+import useHandleValidateErrors from "@/hooks/auth/useHandleValidateErrors";
 
 export default function Page() {
-  const router = useRouter();
   const [loading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState("" || null);
+  const { toast } = useToast();
+  const { dialogLoading, setDialogLoading, signWithGoogle } = useGoogleAuth();
+  const [dialogValidEmailForUser, setDialogValidEmailForUser] = useState(false);
+  const [user, setUser] = useState({});
+  const { measurePassword, handleOnChangeMeasurePassword } =
+    usePasswordStrength();
+  const fileInputRef = useRef(null);
+  const { imagePreview, handleImageChange } = useAvatarUpload();
+  const { validateForm, errors } = useHandleValidateErrors();
 
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
-
   async function handleSubmit(e) {
-    e.preventDefault();
+    if (!validateForm(e, true)) return;
     setIsLoading(true);
+
+    let errors = {};
 
     try {
       const formData = new FormData(e.currentTarget);
+      const name = formData.get("name");
+      const email = formData.get("email");
 
       const response = await fetch("/api/auth/register", {
         method: "POST",
         body: formData,
-      }); 
+      });
 
       const data = await response.json();
 
-      console.log(formData);
-
       if (!response.ok) {
+        errors.login = data.error;
+        setErrors(errors);
         throw new Error(data.error || "Error creating account");
       }
 
-      router.push("/auth/login");
+      toast({
+        title: "Your account has been created successfully!",
+        description: "Log in to this page ;)",
+      });
+
+      console.log(data);
+      setUser({
+        name: name,
+        email: email,
+      });
+      setDialogValidEmailForUser(true);
     } catch (error) {
       console.error(error.message);
     } finally {
       setIsLoading(false);
     }
   }
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-gray-100">
-      <header className="flex items-center justify-between w-full max-w-2xl p-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-extrabold">Register</h1>
-          <ChevronRightIcon aria-hidden="true" />
-        </div>
-        <Logo aria-label="CleverNote logo" />
-      </header>
-      <p className="text-center text-gray-600 mb-8">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-white">
+      <AuthHeader title="Sign Up" />
+      <p className="text-center text-gray-600 my-16">
         New here? Create your account and organize your work!
       </p>
       <main className="w-full max-w-2xl">
         <div className="flex items-center justify-center w-full gap-3 mb-6">
-          <Button
-            className="text-sm rounded-full"
-            aria-label="Login with Google"
-          >
-            <FaGoogle className="w-5 h-5" aria-hidden="true" />
-          </Button>
-          <Button
-            className="text-sm rounded-full"
-            aria-label="Login with GitHub"
-          >
-            <FaGithub className="w-5 h-5" aria-hidden="true" />
-          </Button>
+          <GoogleBtn
+            onClick={signWithGoogle}
+            loading={dialogLoading}
+            onChange={setDialogLoading}
+            mode={"Create"}
+          />
         </div>
         <Separator />
-        <form className="mt-6" onSubmit={handleSubmit}>
+        <form className="mt-6" onSubmit={handleSubmit} noValidate>
           <div className="grid gap-4">
-            <div className="grid gap-1.5">
-              <Label className="text-sm font-bold" htmlFor="name">
-                Name
-              </Label>
+            <FormField label={"Name"} id="name" error={errors.name}>
               <Input
                 type="text"
                 id="name"
@@ -104,51 +105,44 @@ export default function Page() {
                 className="placeholder:text-sm text-sm"
                 aria-required="true"
               />
-            </div>
-            <div className="grid gap-1.5">
-              <div className="flex items-center gap-3">
-                <Label className="text-sm font-bold" htmlFor="picture">
-                  Avatar
-                </Label>
-                {imagePreview && (
-                  <Avatar>
-                    <AvatarImage src={imagePreview} />
-                    <AvatarFallback>AVATAR</AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
+            </FormField>
+            <FormField label="Avatar" helper={"opcional upload"}>
+              <Avatar
+                onClick={handleAvatarClick}
+                className="w-24 h-24 mx-auto cursor-pointer border p-2"
+              >
+                <AvatarImage src={imagePreview} />
+                <AvatarFallback>avatar</AvatarFallback>
+              </Avatar>
               <Input
                 id="picture"
                 name="image"
                 type="file"
                 accept="image/*"
+                required
+                ref={fileInputRef}
                 onChange={handleImageChange}
                 disabled={loading}
+                className="hidden"
                 aria-label="Upload your avatar"
               />
-            </div>
-            <div className="grid gap-1.5">
-              <Label className="text-sm font-bold" htmlFor="email">
-                Email
-              </Label>
+            </FormField>
+            <FormField
+              label={"Email"}
+              id="email"
+              error={errors.email}
+              helper="will be used for login"
+            >
               <Input
                 type="email"
                 id="email"
                 name="email"
-                required
                 placeholder="Enter your email"
                 className="placeholder:text-sm text-sm"
                 aria-required="true"
-                aria-describedby="email-helper"
               />
-              <small id="email-helper" className="text-xs text-gray-500">
-                We'll never share your email.
-              </small>
-            </div>
-            <div className="grid gap-1.5">
-              <Label className="text-sm font-bold" htmlFor="password">
-                Password
-              </Label>
+            </FormField>
+            <FormField label={"Password"} id="password" error={errors.password}>
               <Input
                 type="password"
                 id="password"
@@ -157,36 +151,28 @@ export default function Page() {
                 placeholder="Enter your password"
                 className="placeholder:text-sm text-sm"
                 aria-required="true"
+                onChange={(e) => handleOnChangeMeasurePassword(e.target.value)}
               />
-            </div>
+              <PasswordMeasureProgress passwordStrength={measurePassword} />
+            </FormField>
           </div>
-          <Button
-            className="w-full mt-6"
-            aria-label="Confirm new account"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? (
-              "Creating account..."
-            ) : (
-              <>
-                <ArrowBigRight aria-hidden="true" />
-                Confirm new account
-              </>
-            )}
-          </Button>
+          {errors.login && (
+            <p className="text-red-500 text-sm font-semibold">{errors.login}</p>
+          )}
+          <SubmitBtn
+            loading={loading}
+            text="Create new account"
+            textLoading={"Creating account"}
+          />
+          <DialogValidEmailForUser
+            open={dialogValidEmailForUser}
+            onChange={setDialogValidEmailForUser}
+            user={user}
+          />
         </form>
       </main>
       <footer className="mt-6">
-        <Button variant="outline" className="w-full">
-          <Link
-            className="flex items-center gap-3"
-            href={"/auth/login"}
-            aria-label="Go to login page"
-          >
-            Already have an account? <ArrowUpRight aria-hidden="true" />
-          </Link>
-        </Button>
+        <FooterBtn text="Already have an account" textLink="login" />
       </footer>
     </div>
   );

@@ -17,7 +17,7 @@ export default function AppBreadcrumb() {
   const pathnames = paths.split("/").filter((path) => path);
 
   return (
-    <Breadcrumb >
+    <Breadcrumb>
       <BreadcrumbList>
         {pathnames.map((path, index) => {
           const href = `/${pathnames.slice(0, index + 1).join("/")}`;

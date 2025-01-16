@@ -1,4 +1,4 @@
-import Logo from "../logo";
+import Logo from "./logo/index";
 import Searchbar from "./search";
 import { ModeToggle } from "./mode-toggle";
 import UserAvatar from "./useravatar";
