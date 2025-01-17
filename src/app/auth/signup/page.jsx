@@ -29,7 +29,7 @@ export default function Page() {
     usePasswordStrength();
   const fileInputRef = useRef(null);
   const { imagePreview, handleImageChange } = useAvatarUpload();
-  const { validateForm, errors } = useHandleValidateErrors();
+  const { validateForm, errors, setErrors } = useHandleValidateErrors();
 
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
@@ -64,14 +64,14 @@ export default function Page() {
         title: "Your account has been created successfully!",
         description: "Log in to this page ;)",
       });
-
-      console.log(data);
       setUser({
         name: name,
         email: email,
       });
       setDialogValidEmailForUser(true);
     } catch (error) {
+      errors.login = data.error;
+      setErrors(errors);
       console.error(error.message);
     } finally {
       setIsLoading(false);

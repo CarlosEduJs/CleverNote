@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../[...nextauth]/route";
 
 const prisma = new PrismaClient();
 
@@ -25,8 +23,6 @@ export async function POST(request) {
       },
     });
 
-    console.log(codeOTP);
-
     if (!codeOTP) {
       return NextResponse.json(
         { error: "Invalid or expired code. Please request a new code OTP." },
@@ -38,13 +34,6 @@ export async function POST(request) {
 
     if (!user) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
-    }
-
-    if (user.emailVerified === null) {
-      return NextResponse.json(
-        { error: "Please check your email before trying to log in ;)" },
-        { status: 404 }
-      );
     }
 
     await prisma.oTPCode.update({

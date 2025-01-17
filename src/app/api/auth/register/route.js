@@ -1,9 +1,9 @@
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { transporter } from "@/app/api/utils/nodemailerTransporter";
 import crypto from "crypto";
+import uploadImage from "./upload-image";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +13,7 @@ export async function POST(request) {
     const name = formData.get("name");
     const email = formData.get("email");
     const password = formData.get("password");
-    const imageFile = formData.get("image") || null;
+    const imageFile = formData.get("image");
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -35,27 +35,22 @@ export async function POST(request) {
 
     const hashedPassword = await bcrypt.hash(password, 11);
 
-    let imageUrl = null;
-
-    if (imageFile) {
-      const filename = `avatar-${Date.now()}-${imageFile.name}`;
-      const contentType = imageFile.type || "image/png";
-      const blob = await put(filename, imageFile, {
-        contentType,
-        access: "public",
-      });
-
-      imageUrl = blob.url;
-    }
-
     const userData = {
       name,
       email,
       password: hashedPassword,
+      image: null 
     };
 
-    if (imageUrl) {
-      userData.image = imageUrl;
+    if (imageFile && imageFile.size > 0) {
+      try {
+        const imageUrl = await uploadImage(imageFile);
+        if (imageUrl) {
+          userData.image = imageUrl;
+        }
+      } catch (imageError) {
+        console.error("Image upload error:", imageError);
+      }
     }
 
     const user = await prisma.user.create({
@@ -94,6 +89,9 @@ export async function POST(request) {
     return NextResponse.json(user);
   } catch (error) {
     console.error("Registration error:", error);
-    return NextResponse.json({ error: "Error creating user" }, { status: 500 });
+    return NextResponse.json(
+      { error: `Error creating user: ${error.message}` },
+      { status: 500 }
+    );
   }
 }

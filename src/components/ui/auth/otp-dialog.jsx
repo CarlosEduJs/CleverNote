@@ -8,7 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -21,6 +25,11 @@ export default function DialogOTP({ open, onOpenChange, user }) {
   const [submitText, setSubmitText] = useState("Confirm Code");
   const router = useRouter();
   const [errors, setErrors] = useState({});
+
+  const handleCloseModal = () => {
+    onOpenChange(false);
+    setErrors({});
+  };
 
   const validateCodeOtp = (e) => {
     e.preventDefault();
@@ -59,7 +68,8 @@ export default function DialogOTP({ open, onOpenChange, user }) {
 
           const data = await response.json();
           if (!response.ok) {
-            
+            errors.otp = data.error;
+            setErrors(errors);
             throw new Error("Error", data.error);
           }
           const result = await signIn("credentials", {
@@ -68,8 +78,12 @@ export default function DialogOTP({ open, onOpenChange, user }) {
             redirect: false,
           });
           if (result?.ok) {
+            errors.otp = data.error;
+            setErrors(errors);
             router.push("/overview");
           } else {
+            errors.otp = data.error;
+            setErrors(errors);
             throw new Error("Error", result.error);
           }
         } catch (error) {
@@ -87,6 +101,7 @@ export default function DialogOTP({ open, onOpenChange, user }) {
       setIsLoading(false);
       setSubmitText("Confirm Code");
       setOtp("");
+      handleCloseModal();
     }
   }
 
